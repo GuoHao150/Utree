@@ -45,10 +45,11 @@ fn strtok<'content, 'b>(s: &'b mut &'content str, delimiter: &'static str) -> &'
     }
 }
 
-fn clustering() -> io::Result<()> {
-    let mut content = "s1 s2 -2\ns1 s3 -5\ns1 s4 -7\ns1 s5 -9\ns2 s3 -4\ns2 s4 -6\ns2 s5 -7\ns3 s4 -4\ns3 s5 -6\ns4 s5 -3\n".to_string();
+fn clustering(tsv_file: &String) -> io::Result<()> {
+    //let mut content = "s1 s2 -2\ns1 s3 -5\ns1 s4 -7\ns1 s5 -9\ns2 s3 -4\ns2 s4 -6\ns2 s5 -7\ns3 s4 -4\ns3 s5 -6\ns4 s5 -3\n".to_string();
+    let content = read_file(&tsv_file)?;
     let row_sep = "\n";
-    let data_sep = " ";
+    let data_sep = "\t";
     let mut lines = &content[..]; // life time is 'content
     let mut paired_values_dict: BTree<ArcStr<'_>, BTree<ArcStr<'_>, f64>> = BTree::new(4);
     let mut paired_values_heap: Maxheap<f64, HeapPair> = Maxheap::new();
@@ -101,7 +102,7 @@ fn clustering() -> io::Result<()> {
     let expected_combination_nums = ((n * n) - n) / 2;
     let accepted_pair_nums = paired_values_dict
         .iter()
-        .map(|(k, v)| v.len())
+        .map(|(_k, v)| v.len())
         .into_iter()
         .reduce(|x, y| x + y)
         .unwrap_or(0);
@@ -127,6 +128,9 @@ fn clustering() -> io::Result<()> {
     Ok(())
 }
 
-fn main() {
-    clustering();
+fn main() -> io::Result<()> {
+    let tsv = std::env::args().nth(1).expect("Must give a tsv file.");
+    clustering(&tsv)?;
+
+    Ok(())
 }
